@@ -1,0 +1,5 @@
+#.dockerignore 
+
+*.env
+
+*application.log.gz

@@ -24,4 +24,6 @@ hs_err_pid*
 /target/
 *.env
 nbactions.xml
+nb-configuration.xml
 docker-compose.yml
+*.html
