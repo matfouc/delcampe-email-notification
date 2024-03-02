@@ -20,6 +20,10 @@ public class EmailUtils {
         
         Properties props = new Properties();
         props.put("mail.smtp.host", config.getProperty("SMTP_HOST"));
+//        props.put("mail.smtp.starttls.enable","true");
+//        props.put("mail.smtp.auth", "true");
+//        props.put("mail.smtp.port", 465);
+
         Session session = Session.getInstance(props, null);
 
         try {
@@ -28,16 +32,18 @@ public class EmailUtils {
             msg.setFrom(config.getProperty("SMTP_FROM"));
             msg.setRecipients(TO, config.getProperty("SMTP_TO"));
 
-            msg.setSubject("New received bids on Delcampe. Congratulations !!!");
+            msg.setSubject("Ongoing bids on Delcampe. Congratulations !!!");
             msg.setSentDate(new Date());
             
             //TODO recopy perhaps same HTML than on Delcampe page
             StringBuilder htmlMsg = new StringBuilder("<body><h4>Here is the list of active items with bids:</h4><br><table>");
-            htmlMsg.append("<tr><td>Item Reference</td><td>Price</td><td>End Date</td><td>Buyer</td>");
+            htmlMsg.append("<tr><td>Item</td><td>Price</td><td>Current buyer</td><td>End date</td>");
             
             list.stream().forEach(item -> {
                     htmlMsg.append("<tr><td>")
-                        .append(item.getReference())
+                        .append("<a href=https://www.delcampe.com" + 
+                                    item.getItemLink() + ">" +
+                                    item.getTitle() + "</a>")
                         .append("</td><td>")
                         .append(item.getCurrentPrice())
                         .append("</td><td>")
@@ -48,7 +54,7 @@ public class EmailUtils {
             });
             htmlMsg.append("</table></body>");
             
-            msg.setContent(htmlMsg.toString(), "text/html");            
+            msg.setContent(htmlMsg.toString(), "text/html;charset=utf-8");            
             
             Transport.send( msg, 
                             config.getProperty("SMTP_USERNAME"), 

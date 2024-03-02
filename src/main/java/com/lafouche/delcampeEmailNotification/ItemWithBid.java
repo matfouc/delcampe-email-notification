@@ -1,26 +1,30 @@
 package com.lafouche.delcampeEmailNotification;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 public class ItemWithBid implements Comparable<ItemWithBid> {
     
     private int                 reference;
     private String              title;
-    private LocalDate           endDate;
+    private LocalDateTime       endDate;
     private String              currentPrice;
     private String              buyer;
+    private String              imageSrcPath;
+    private String              itemLink;
 
     public ItemWithBid() {
-        this(-1, "", LocalDate.now(), "0€", "");
+        this(-1, "", LocalDateTime.now(), "0€", "", "", "");
     }
         
-    public ItemWithBid(int reference, String title, LocalDate endDate, String currentPrice, String buyer) {
+    public ItemWithBid(int reference, String title, LocalDateTime endDate, String currentPrice, String buyer, String imageSrcPath, String itemLink) {
         this.reference = reference;
         this.title = title;
         this.endDate = endDate;
         this.currentPrice = currentPrice;
         this.buyer = buyer;
+        this.imageSrcPath = imageSrcPath;
+        this.itemLink = itemLink;
     }
 
     public int getReference() {
@@ -39,11 +43,11 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
         this.title = title;
     }
 
-    public LocalDate getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 
@@ -62,6 +66,22 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
     public void setBuyer(String buyer) {
         this.buyer = buyer;
     }    
+
+    public String getImageSrcPath() {
+        return imageSrcPath;
+    }
+
+    public void setImageSrcPath(String imageSrcPath) {
+        this.imageSrcPath = imageSrcPath;
+    }
+
+    public String getItemLink() {
+        return itemLink;
+    }
+
+    public void setItemLink(String itemLink) {
+        this.itemLink = itemLink;
+    }
 
     @Override
     public int hashCode() {
@@ -94,6 +114,8 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
         sb.append(", endDate=").append(endDate);
         sb.append(", currentPrice=").append(currentPrice);
         sb.append(", buyer=").append(buyer);
+        sb.append(", imageSrcPath=").append(imageSrcPath);
+        sb.append(", itemLink=").append(itemLink);
         sb.append('}');
         return sb.toString();
     }   
