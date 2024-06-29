@@ -28,3 +28,5 @@ nb-configuration.xml
 docker-compose.yml
 *.html
 /dependency-reduced-pom.xml
+
+/.idea/
