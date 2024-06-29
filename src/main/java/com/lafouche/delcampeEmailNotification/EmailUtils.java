@@ -1,5 +1,7 @@
 package com.lafouche.delcampeEmailNotification;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -20,10 +22,6 @@ public class EmailUtils {
         
         Properties props = new Properties();
         props.put("mail.smtp.host", config.getProperty("SMTP_HOST"));
-//        props.put("mail.smtp.starttls.enable","true");
-//        props.put("mail.smtp.auth", "true");
-//        props.put("mail.smtp.port", 465);
-
         Session session = Session.getInstance(props, null);
 
         try {
@@ -36,23 +34,182 @@ public class EmailUtils {
             msg.setSentDate(new Date());
             
             //TODO recopy perhaps same HTML than on Delcampe page
-            StringBuilder htmlMsg = new StringBuilder("<body><h4>Here is the list of active items with bids:</h4><br><table>");
-            htmlMsg.append("<tr><td>Item</td><td>Price</td><td>Current buyer</td><td>End date</td>");
+            StringBuilder htmlMsg = new StringBuilder("""
+                <!DOCTYPE html>
+                    <html lang="en">
+                        <head>
+                            <style>
+                                body {
+                                    background-color: #f2f2f2;                     
+                                }
+
+                                .main {
+                                    background-color: #ffffff;
+                                    border-collapse: collapse;
+                                    table-layout: fixed; 
+                                    width: 800px;                     
+                                    font-family: arial,helvetica,sans-serif;
+                                    color: #22486d;
+                                    font-size: 13px;        
+                                    margin-left: auto;
+                                    margin-right: auto;                 
+                                }       
+
+                                #delcampe-logo {
+                                    width: 150px; 
+                                    height:auto; 
+                                    display: block; 
+                                    margin: auto;
+                                }
+
+                                .table-items {
+                                    border-collapse: collapse;
+                                    border:1px solid;                
+                                    table-layout: fixed;                
+                                    font-family: arial,helvetica,sans-serif;
+                                    font-size: 13px;    
+                                    color: #22486d;
+                                    margin-left: auto;
+                                    margin-right: auto;    
+                                    background-color: #f8f8f8;                                                                  
+                                }
+
+                                td, th {
+                                    padding: 25px;
+                                }   
+
+                                .table-items, .table-items-header {
+                                    border: 1px solid #808080;
+                                    text-align: center;                    
+                                }                 
+
+                                .table-items-header { 
+                                    font-weight: bold;
+                                    background-color: #f2f2f2;
+                                }
+
+                                .table-items-row:nth-child(even) {
+                                    background-color: #f8f8f8;
+                                }
+                                .table-items-row:nth-child(odd) {
+                                    background-color: #f1f1f1;
+                                }
+
+                                .horizontal-bar {
+                                    height: 1px; 
+                                    line-height: 1px; 
+                                    font-size: 1px; 
+                                    border-top: 1px solid #e9e9e9;
+                                }
+
+                                .image-div {
+                                    height: 60px;
+                                    width: 60px;
+                                    justify-content: center;
+                                }
+
+                                .text-align-left {
+                                    text-align:left;
+                                    padding-top: 10px;
+                                    padding-bottom: 10px;
+                                }
+                            </style>
+                            <title>Delcampe - Active bids</title>
+                        </head>   
+
+                        <body>        
+                            <table class="main" role="presentation">
+                                <tr>
+                                    <td colspan="3">
+                                        <a href="https://www.delcampe.net/" >
+                                            <img id="delcampe-logo" src="https://www.delcampe.net/images/mail/delcampe.png">
+                                        </a>        
+                                    </td>
+                                </tr>        
+                                <tr>
+                                    <td colspan="3" height="1" class="horizontal-bar"></td>                    
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-align-left">
+                                        Here is the list of active items with bids:             
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="padding-top:10px">
+                                        <table class="table-items" role="presentation">               
+                """);
+            
+            htmlMsg.append("""
+                <tr>
+                     <th class="table-items-header">Image</th>
+                     <th class="table-items-header" width="4000">Item</th>
+                     <th class="table-items-header">Price</th>
+                     <th class="table-items-header">Current buyer</th>
+                     <th class="table-items-header">End date</th>
+                </tr> 
+            """);
             
             list.stream().forEach(item -> {
-                    htmlMsg.append("<tr><td>")
-                        .append("<a href=https://www.delcampe.com" + 
+                    htmlMsg.append("""
+                        <tr class="table-items-row">
+                            <td>
+                                <div class="image-div"> 
+                                   <img src="
+                        """ + item.getImageSrcPath() +
+                        """
+                                    ">
+                                </div>
+                            </td>
+                        """)
+
+                        .append(
+                        """
+                            <td>
+                                <a href="https://www.delcampe.com" """ + 
                                     item.getItemLink() + ">" +
-                                    item.getTitle() + "</a>")
-                        .append("</td><td>")
-                        .append(item.getCurrentPrice())
-                        .append("</td><td>")
-                        .append(item.getBuyer())
-                        .append("</td><td>")
-                        .append(item.getEndDate())
-                        .append("</td></tr>");
+                                    item.getTitle() + 
+                        """                                
+                                </a>
+                            </td>
+                        """)
+                            
+                        .append(
+                        """
+                            <td> 
+                        """ + item.getCurrentPrice() +
+                        """
+                            </td>
+                        """)
+                            
+                        .append(
+                        """
+                            <td> 
+                        """ + item.getBuyer() +
+                        """
+                            </td>
+                        """)
+                            
+                        .append(
+                        """
+                            <td> 
+                        """ + item.getEndDate().format(
+                                DateTimeFormatter.ofLocalizedDateTime(
+                                    FormatStyle.MEDIUM)) +
+                        """
+                            </td>
+                        </tr>
+                        """);
             });
-            htmlMsg.append("</table></body>");
+            
+            htmlMsg.append(
+            """                     
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>
+            """);
             
             msg.setContent(htmlMsg.toString(), "text/html;charset=utf-8");            
             
