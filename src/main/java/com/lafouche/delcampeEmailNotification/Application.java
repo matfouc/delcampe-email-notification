@@ -3,7 +3,10 @@ package com.lafouche.delcampeEmailNotification;
 import static com.lafouche.delcampeEmailNotification.EmailUtils.sendEmailNotification;
 import static com.lafouche.delcampeEmailNotification.WebScraperUtils.saveHTMLonDisk;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,46 +37,86 @@ public class Application {
     private static final String DELCAMPE_BIDS_PAGE = "https://www.delcampe.net/fr/collections/sell/item-for-sale/ongoing-with-offers";
     
     private static int NOTIFICATION_HOUR = 0;
+    private static ZoneId TIMEZONE;
     
     public static void main(String[] args) {  
-        
-        try {
-            NOTIFICATION_HOUR = Integer.parseInt(
-                                    CONFIG.getProperty("NOTIFICATION_HOUR"));
-            
-        } catch(NumberFormatException ex) {
-            LOGGER.error("NOTIFICATION_HOUR must be an integer.");
+        if( ! validateEnvironmentVariables())
             return;
-        }
-        
-        if(NOTIFICATION_HOUR < 0 || NOTIFICATION_HOUR > 23) {
-            LOGGER.error("NOTIFICATION_HOUR must be in interval [0-23].");
-            return;
-        }
         
         SwingUtilities.invokeLater(() -> {
             new Application();
         });        
     }
-
+    
+    private static boolean validateEnvironmentVariables() {
+        try {
+            NOTIFICATION_HOUR = Integer.parseInt(
+                                    CONFIG.getProperty("NOTIFICATION_HOUR"));
+            
+        } catch(NumberFormatException ex) {
+            LOGGER.error("NOTIFICATION_HOUR environment variable must be an integer.");
+            return false;
+        }
+        
+        if(NOTIFICATION_HOUR < 0 || NOTIFICATION_HOUR > 23) {
+            LOGGER.error("NOTIFICATION_HOUR environment variable must be in interval [0-23].");
+            return false;
+        }
+        
+        try {
+            TIMEZONE = ZoneId.of(CONFIG.getProperty("TZ"));
+        } catch (Exception e) {
+            LOGGER.error("TZ environment variable must correspond to a correct timezone.");
+            return false;
+        }    
+        
+        return true;
+    }
+    
     private Application() {       
+        
+        LOGGER.info("Ongoing Delcampe Bids Notifier started");
+        LOGGER.info("Application will be executed every day at " + 
+                        NOTIFICATION_HOUR + (NOTIFICATION_HOUR > 12 ? "PM" : "AM"));
+        
         /*
             send a new email for all items with active bids every day at a certain hour   
         */        
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-            executorService.scheduleAtFixedRate(() -> {
-                
-            Map<String, String> cookies = connect2Delcampe();
+        
+        executorService.scheduleAtFixedRate(() -> {
 
-            if( ! cookies.isEmpty() ) {
-                 List<ItemWithBid> activeBids = getActiveBidsFromDelcampeProfile(cookies);
+                Map<String, String> cookies = connect2Delcampe();
 
-                 if( ! activeBids.isEmpty() )                        
-                //activeBids.add(new ItemWithBid(123456, "Y123 - côté 125€", LocalDateTime.of(2024, Month.FEBRUARY, 5, 12, 23), "100€", "Mister1", "", ""));
-                //activeBids.add(new ItemWithBid(392417847, "Y1 - côté 2000€", LocalDateTime.of(2024, Month.FEBRUARY, 28, 23, 05), "250€", "BuyMe!!", "", ""));
-                     sendEmailNotification(activeBids);            
-            }
-        }, TimeUnit.HOURS.toHours(NOTIFICATION_HOUR), 1, TimeUnit.DAYS);   
+                if( ! cookies.isEmpty() ) {
+                     List<ItemWithBid> activeBids = getActiveBidsFromDelcampeProfile(cookies);
+
+                     if( ! activeBids.isEmpty() )                        
+                    //activeBids.add(new ItemWithBid(123456, "Y123 - côté 125€", LocalDateTime.of(2024, Month.FEBRUARY, 5, 12, 23), "100€", "Mister1", "", ""));
+                    //activeBids.add(new ItemWithBid(392417847, "Y1 - côté 2000€", LocalDateTime.of(2024, Month.FEBRUARY, 28, 23, 05), "250€", "BuyMe!!", "", ""));
+                         sendEmailNotification(activeBids);            
+                }
+            }, 
+            computeNextInitialStartDelay(), 
+            TimeUnit.DAYS.toSeconds(1), 
+            TimeUnit.SECONDS);   
+    }
+    
+    private long computeNextInitialStartDelay() {
+        
+        ZonedDateTime now = ZonedDateTime.now(TIMEZONE);
+        ZonedDateTime nextRun = now.withHour(NOTIFICATION_HOUR).withMinute(0).withSecond(0);
+        
+        /*
+            if the application starts after the notification hour, 
+            we immediatly execute the application
+        */
+        if(now.compareTo(nextRun) > 0)
+            nextRun = now;
+
+        Duration duration = Duration.between(now, nextRun);
+        
+        return duration.getSeconds();
     }
     
     private Map<String, String> connect2Delcampe() {
@@ -211,3 +254,4 @@ public class Application {
         return new ArrayList<ItemWithBid>();
     }    
 }
+
