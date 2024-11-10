@@ -94,7 +94,7 @@ public class Application {
                      if( ! activeBids.isEmpty() )                        
                     //activeBids.add(new ItemWithBid(123456, "Y123 - côté 125€", LocalDateTime.of(2024, Month.FEBRUARY, 5, 12, 23), "100€", "Mister1", "", ""));
                     //activeBids.add(new ItemWithBid(392417847, "Y1 - côté 2000€", LocalDateTime.of(2024, Month.FEBRUARY, 28, 23, 05), "250€", "BuyMe!!", "", ""));
-                         sendEmailNotification(activeBids);            
+                        sendEmailNotification(activeBids);            
                 }
             }, 
             computeNextInitialStartDelay(), 
@@ -216,9 +216,9 @@ public class Application {
                 
                 //TODO parse item with bid from HTML
                 String itemTitle = itemWithBidElement.select(".info-item a")
-                                        .first().text();
+                                        .first().ownText();
                 int itemReference = Integer.parseInt(
-                                        itemWithBidElement.select(".info-item span")
+                                        itemWithBidElement.select(".info-item .item-id")
                                             .first().text().substring(1));
                 
                 String endDateString = itemWithBidElement.select(".list-date span")
@@ -247,7 +247,8 @@ public class Application {
                                 itemPrice, 
                                 itemCurrentBuyer, 
                                 imageSrcPath,
-                                itemLink);                
+                                itemLink);          
+                
             }).collect(Collectors.toList());            
         }
                 
