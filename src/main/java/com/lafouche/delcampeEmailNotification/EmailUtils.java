@@ -1,5 +1,6 @@
 package com.lafouche.delcampeEmailNotification;
 
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
@@ -24,6 +25,8 @@ public class EmailUtils {
         props.put("mail.smtp.host", config.getProperty("SMTP_HOST"));
         Session session = Session.getInstance(props, null);
 
+        Double totalBids = calculateTotalBidPrice(list);
+        
         try {
             MimeMessage msg = new MimeMessage(session);
             
@@ -131,14 +134,18 @@ public class EmailUtils {
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="text-align-left">
-                                        Here is the list of active items with bids:             
+                                        Here is the list of active items with bids for a total of             
+                """);
+            htmlMsg.append("<b>" + NumberFormat.getCurrencyInstance().format(totalBids) + "</b>");
+            
+            htmlMsg.append(""" 
+                           :             
                                     </td>
                                 </tr>
                                 <tr>
                                     <td colspan="3" style="padding-top:10px">
-                                        <table class="table-items" role="presentation">               
-                """);
-            
+                                        <table class="table-items" role="presentation">   
+                           """);                         
             htmlMsg.append("""
                 <tr>
                      <th class="table-items-header">Image</th>
@@ -223,4 +230,15 @@ public class EmailUtils {
             logger.error(mex);
         }        
     }    
+
+    private static double calculateTotalBidPrice(List<ItemWithBid> list) {
+        return list.stream()
+            .mapToDouble(item -> {
+                return Double.parseDouble(
+                        item.getCurrentPrice()
+                                .replace("€", "")
+                                .replace(",", "."));
+            })
+            .reduce(Double::sum).orElse(0);        
+    }
 }
