@@ -1,11 +1,12 @@
 package com.lafouche.delcampeEmailNotification;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 
 public class ItemWithBid implements Comparable<ItemWithBid> {
     
-    private int                 reference;
+    private long                reference;
     private String              title;
     private LocalDateTime       endDate;
     private String              currentPrice;
@@ -17,7 +18,7 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
         this(-1, "", LocalDateTime.now(), "0€", "", "", "");
     }
         
-    public ItemWithBid(int reference, String title, LocalDateTime endDate, String currentPrice, String buyer, String imageSrcPath, String itemLink) {
+    public ItemWithBid(long reference, String title, LocalDateTime endDate, String currentPrice, String buyer, String imageSrcPath, String itemLink) {
         this.reference = reference;
         this.title = title;
         this.endDate = endDate;
@@ -27,11 +28,11 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
         this.itemLink = itemLink;
     }
 
-    public int getReference() {
+    public long getReference() {
         return reference;
     }
 
-    public void setReference(int reference) {
+    public void setReference(long reference) {
         this.reference = reference;
     }
 
@@ -86,9 +87,16 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 29 * hash + this.reference;
+        hash = 13 * hash + (int) (this.reference ^ (this.reference >>> 32));
+        hash = 13 * hash + Objects.hashCode(this.title);
+        hash = 13 * hash + Objects.hashCode(this.endDate);
+        hash = 13 * hash + Objects.hashCode(this.currentPrice);
+        hash = 13 * hash + Objects.hashCode(this.buyer);
+        hash = 13 * hash + Objects.hashCode(this.imageSrcPath);
+        hash = 13 * hash + Objects.hashCode(this.itemLink);
         return hash;
     }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -122,7 +130,7 @@ public class ItemWithBid implements Comparable<ItemWithBid> {
 
     @Override
     public int compareTo(ItemWithBid item) {
-        return Integer.compare(
+        return Long.compare(
                 this.getReference(), 
                 item.getReference());
     }

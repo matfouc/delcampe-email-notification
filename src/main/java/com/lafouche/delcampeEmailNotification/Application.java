@@ -217,7 +217,7 @@ public class Application {
                 //TODO parse item with bid from HTML
                 String itemTitle = itemWithBidElement.select(".info-item a")
                                         .first().ownText();
-                int itemReference = Integer.parseInt(
+                long itemReference = Long.parseLong(
                                         itemWithBidElement.select(".info-item .item-id")
                                             .first().text().substring(1));
                 
