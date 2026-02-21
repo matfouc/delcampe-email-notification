@@ -173,7 +173,9 @@ public class Application {
         } catch (IOException ex) {
             LOGGER.error(ex);
             
-            return Map.of();
+            LOGGER.info("Retry once more");
+                        
+            return connect2Delcampe();
         }
     }
  
@@ -218,7 +220,7 @@ public class Application {
                 String itemTitle = itemWithBidElement.select(".info-item a")
                                         .first().ownText();
                 long itemReference = Long.parseLong(
-                                        itemWithBidElement.select(".info-item .item-id")
+                                        itemWithBidElement.select(".info-item .line-height-sm")
                                             .first().text().substring(1));
                 
                 String endDateString = itemWithBidElement.select(".list-date span")
@@ -235,7 +237,7 @@ public class Application {
                             .first().text();
                         
                 String imageSrcPath = 
-                        itemWithBidElement.select(".list-info .image-small").first().attr("src");
+                        itemWithBidElement.select(".list-info .thumb-zoom").first().attr("href");
                
                 String itemLink =
                         itemWithBidElement.select(".list-info .item-link").first().attr("href");

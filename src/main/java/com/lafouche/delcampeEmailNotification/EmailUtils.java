@@ -172,8 +172,8 @@ public class EmailUtils {
                         .append(
                         """
                             <td>
-                                <a href="https://www.delcampe.com" """ + 
-                                    item.getItemLink() + ">" +
+                                <a href="https://www.delcampe.com """ + 
+                                    item.getItemLink() + "\">" +
                                     item.getTitle() + 
                         """                                
                                 </a>
