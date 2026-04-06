@@ -190,7 +190,7 @@ public class Application {
                                 .method(GET)
                                 .execute();
 
-            Document doc = res.bufferUp().parse();
+            Document doc = res.readFully().parse();
 
             LOGGER.info(
                 "request 3 - Access to my ongoing sale(s) with bids: " + res.url() + "\r\n" +
